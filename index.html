@@ -66,7 +66,7 @@
     <section id="home">
 
        
-        <!-- HOME CAROUSEL - Automatic -->
+        <!-- HOME CAROUSEL -->
         <div class="carousel w-full relative overflow-hidden" id="hero-carousel">
             <div class="flex transition-transform duration-700 ease-in-out" id="hero-slides">
                 <div class="min-w-full">
@@ -107,13 +107,13 @@
             <div class="w-52 bg-base-100 border border-base-300 rounded-xl shadow-md p-4 sticky top-20">
 
                 <div class="flex justify-between items-center mb-4">
-                    <h3 class="font-bold text-base">🔍 Filters</h3>
+                    <h3 class="font-bold text-base">Filters</h3>
                     <button onclick="resetFilters()" class="btn btn-xs btn-ghost text-primary">Reset</button>
                 </div>
 
                
                 <div class="mb-4">
-                    <h4 class="font-semibold text-sm mb-2">💰 Price</h4>
+                    <h4 class="font-semibold text-sm mb-2">Price</h4>
                     <input
                         type="range"
                         id="price-range"
@@ -130,7 +130,7 @@
 
               
                 <div class="mb-4">
-                    <h4 class="font-semibold text-sm mb-3">📦 Availability</h4>
+                    <h4 class="font-semibold text-sm mb-3">Availability</h4>
 
                     <label class="flex items-center gap-2 mb-2 cursor-pointer">
                         <input type="checkbox" id="filter-instock" class="checkbox checkbox-primary checkbox-sm" checked onchange="updateFilters()" />
@@ -147,7 +147,7 @@
 
                 
                 <div>
-                    <h4 class="font-semibold text-sm mb-3">🏷️ Brand</h4>
+                    <h4 class="font-semibold text-sm mb-3">Brand</h4>
                     <div id="brand-filter-list" class="flex flex-col gap-2">
                       
                     </div>
@@ -158,7 +158,7 @@
             <div class="flex-1">
                 <div id="product-list" class="grid grid-cols-3 gap-4"></div>
                 <p id="no-results" class="text-center text-gray-500 py-16 text-lg" style="display:none">
-                    😔 No products match your filters.
+                     No products match your filters.
                 </p>
             </div>
            
@@ -279,7 +279,7 @@
             </div>
         </div>
 
-        <!-- NEW: Meet the Team Section -->
+        <!-- Team Section -->
         <div class="mt-20">
             <h2 class="text-3xl font-bold text-center mb-10">Meet Our Team</h2>
             
@@ -485,7 +485,7 @@
             </div>
         </nav>
         <aside>
-            <p>Copyright © 2025 - All right reserved by Tech_commerce.</p>
+            <p>Copyright © 2025 - All right reserved.</p>
         </aside>
     </footer>
 
@@ -516,120 +516,6 @@
 
 
     <script src="app.js"></script>
-
-
-    <script>
-
-        
-        var productMeta = {
-            1:  { brand: 'Generic',        stock: 'instock' },
-            2:  { brand: 'Generic',        stock: 'tba'     },
-            3:  { brand: 'Generic',        stock: 'tba'     },
-            4:  { brand: 'Intel',          stock: 'instock' },
-            5:  { brand: 'NVIDIA',         stock: 'instock' },
-            6:  { brand: 'Corsair',        stock: 'instock' },
-            7:  { brand: 'Samsung',        stock: 'instock' },
-            8:  { brand: 'ASUS',           stock: 'instock' },
-            9:  { brand: 'Corsair',        stock: 'instock' },
-            10: { brand: 'Noctua',         stock: 'instock' },
-            11: { brand: 'Fractal Design', stock: 'instock' },
-            12: { brand: 'WD',             stock: 'instock' },
-            13: { brand: 'TP-Link',        stock: 'instock' }
-        };
-
-        var productPrices = {
-            1: 59.99,  2: 99.99,  3: 29.99,
-            4: 389.99, 5: 599.99, 6: 74.99,
-            7: 109.99, 8: 299.99, 9: 134.99,
-            10: 99.99, 11: 149.99, 12: 54.99, 13: 39.99
-        };
-
-        var allBrands = ['ASUS', 'Corsair', 'Fractal Design', 'Generic', 'Intel', 'Noctua', 'NVIDIA', 'Samsung', 'TP-Link', 'WD'];
-
-        function buildBrandCheckboxes() {
-            var container = document.getElementById('brand-filter-list');
-            container.innerHTML = '';
-
-            for (var i = 0; i < allBrands.length; i++) {
-                var brand = allBrands[i];
-                var label = document.createElement('label');
-                label.className = 'flex items-center gap-2 cursor-pointer';
-                label.innerHTML =
-                    '<input type="checkbox" class="checkbox checkbox-primary checkbox-sm brand-cb" value="' + brand + '" checked onchange="updateFilters()" />' +
-                    '<span class="text-sm">' + brand + '</span>';
-                container.appendChild(label);
-            }
-        }
-
-        buildBrandCheckboxes();
-        function onPriceChange(val) {
-            var label = document.getElementById('price-label');
-            if (parseInt(val) >= 700) {
-                label.textContent = 'Any price';
-            } else {
-                label.textContent = '$' + val;
-            }
-            updateFilters();
-        }
-        function updateFilters() {
-            var maxPrice = parseInt(document.getElementById('price-range').value);
-            var showInstock = document.getElementById('filter-instock').checked;
-            var showTba = document.getElementById('filter-tba').checked;
-            var checkedBrands = [];
-            var brandCheckboxes = document.querySelectorAll('.brand-cb:checked');
-            for (var i = 0; i < brandCheckboxes.length; i++) {
-                checkedBrands.push(brandCheckboxes[i].value);
-            }
-
-            var visibleCount = 0;
-            var cards = document.querySelectorAll('#product-list > div');
-
-            for (var i = 0; i < cards.length; i++) {
-                var card = cards[i];
-                var id = parseInt(card.dataset.id);
-                var meta = productMeta[id];
-                var price = productPrices[id] || 0;
-
-                var priceOk = (maxPrice >= 700) || (price <= maxPrice);
-                var stockOk = (meta.stock === 'instock' && showInstock) || (meta.stock === 'tba' && showTba);
-                var brandOk = checkedBrands.indexOf(meta.brand) !== -1;
-
-                if (priceOk && stockOk && brandOk) {
-                    card.style.display = '';
-                    visibleCount++;
-                } else {
-                    card.style.display = 'none';
-                }
-            }
-
-            var noResults = document.getElementById('no-results');
-            if (visibleCount === 0) {
-                noResults.style.display = 'block';
-            } else {
-                noResults.style.display = 'none';
-            }
-        }
-        function resetFilters() {
-            document.getElementById('price-range').value = 700;
-            document.getElementById('price-label').textContent = 'Any price';
-            document.getElementById('filter-instock').checked = true;
-            document.getElementById('filter-tba').checked = false;
-
-            var brandCheckboxes = document.querySelectorAll('.brand-cb');
-            for (var i = 0; i < brandCheckboxes.length; i++) {
-                brandCheckboxes[i].checked = true;
-            }
-
-            updateFilters();
-        }
-
-        var observer = new MutationObserver(function() {
-            updateFilters();
-        });
-        observer.observe(document.getElementById('product-list'), { childList: true });
-
-    
-    </script>
 
 </body>
 
