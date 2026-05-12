@@ -1,4 +1,4 @@
-// ─── Load Products ───────────────────────────────────────────────────────────
+// ─── Load Products ──
 function loadProducts() {
   fetch('product.json')
     .then(res => res.json())
@@ -7,7 +7,7 @@ function loadProducts() {
 
 loadProducts();
 
-// ─── Render Product Cards ─────────────────────────────────────────────────────
+// ─── Product Cards ───
 const showDetails = (products) => {
   const list = document.getElementById('product-list');
   products.forEach(item => {
@@ -40,13 +40,13 @@ const showDetails = (products) => {
   });
 };
 
-// ─── Cart State ───────────────────────────────────────────────────────────────
+// ─── Cart State ──────
 let cart = {}; 
 let userBalance = 1000;
 let appliedDiscount = 0; 
 let shipping = 80;
 
-// ─── Balance & Coupon Helpers ───────────────────────────────────────────────
+// ─── Balance & Coupon Helpers ────
 const updateBalanceDisplay = () => {
   const el = document.getElementById('user-balance');
   if (el) el.textContent = '$' + userBalance.toFixed(2);
@@ -259,7 +259,64 @@ const renderCart = () => {
 };
 
 // Place Order, Toast, etc.
-const placeOrder = () => { }; 
+const placeOrder = () => {
+  const items = Object.values(cart);
+  if (items.length === 0) {
+    showToast("❌ Your cart is empty!");
+    return;
+  }
+
+  const total = parseFloat(document.getElementById('cart-total').textContent);
+
+  if (userBalance < total) {
+    showToast("❌ Insufficient balance! Add more funds.");
+    return;
+  }
+
+  // Deduct balance
+  userBalance -= total;
+
+  // Build order summary for modal
+  const summaryHTML = `
+    <div class="space-y-2 mb-4">
+      ${items.map(item => `
+        <div class="flex justify-between text-sm">
+          <span class="text-gray-600">${item.title} × ${item.qty}</span>
+          <span class="font-medium">$${(item.price * item.qty).toFixed(2)}</span>
+        </div>
+      `).join('')}
+    </div>
+    <div class="border-t border-base-300 pt-3 space-y-1">
+      <div class="flex justify-between text-sm text-gray-500">
+        <span>Delivery</span>
+        <span>$${document.getElementById('cart-delivery').textContent}</span>
+      </div>
+      <div class="flex justify-between text-sm text-gray-500">
+        <span>Shipping</span>
+        <span>$${document.getElementById('shipping-cost').textContent}</span>
+      </div>
+      <div class="flex justify-between font-bold text-base mt-2">
+        <span>Total Paid</span>
+        <span class="text-primary">$${total.toFixed(2)}</span>
+      </div>
+      <div class="flex justify-between text-sm text-gray-500 mt-1">
+        <span>Remaining Balance</span>
+        <span>$${userBalance.toFixed(2)}</span>
+      </div>
+    </div>
+  `;
+
+  document.getElementById('order-summary').innerHTML = summaryHTML;
+  document.getElementById('order-modal').showModal();
+
+  // Clear cart and reset coupon
+  cart = {};
+  appliedDiscount = 0;
+  document.getElementById('coupon-input').value = '';
+  document.getElementById('coupon-status').innerHTML = '';
+  renderCart();
+  updateBalanceDisplay();
+};
 
 const showToast = (message) => {
   const toast = document.getElementById('cart-toast');
@@ -323,3 +380,114 @@ window.addEventListener('load', () => {
 // Initialize Everything
 loadReviews();
 updateBalanceDisplay();
+
+// ─── Product Filters ──────────────────────────────────────────────────────────
+var productMeta = {
+    1:  { brand: 'Generic',        stock: 'instock' },
+    2:  { brand: 'Generic',        stock: 'tba'     },
+    3:  { brand: 'Generic',        stock: 'tba'     },
+    4:  { brand: 'Intel',          stock: 'instock' },
+    5:  { brand: 'NVIDIA',         stock: 'instock' },
+    6:  { brand: 'Corsair',        stock: 'instock' },
+    7:  { brand: 'Samsung',        stock: 'instock' },
+    8:  { brand: 'ASUS',           stock: 'instock' },
+    9:  { brand: 'Corsair',        stock: 'instock' },
+    10: { brand: 'Noctua',         stock: 'instock' },
+    11: { brand: 'Fractal Design', stock: 'instock' },
+    12: { brand: 'WD',             stock: 'instock' },
+    13: { brand: 'TP-Link',        stock: 'instock' }
+};
+
+var productPrices = {
+    1: 59.99,  2: 99.99,  3: 29.99,
+    4: 389.99, 5: 599.99, 6: 74.99,
+    7: 109.99, 8: 299.99, 9: 134.99,
+    10: 99.99, 11: 149.99, 12: 54.99, 13: 39.99
+};
+
+var allBrands = ['ASUS', 'Corsair', 'Fractal Design', 'Generic', 'Intel', 'Noctua', 'NVIDIA', 'Samsung', 'TP-Link', 'WD'];
+
+function buildBrandCheckboxes() {
+    var container = document.getElementById('brand-filter-list');
+    container.innerHTML = '';
+
+    for (var i = 0; i < allBrands.length; i++) {
+        var brand = allBrands[i];
+        var label = document.createElement('label');
+        label.className = 'flex items-center gap-2 cursor-pointer';
+        label.innerHTML =
+            '<input type="checkbox" class="checkbox checkbox-primary checkbox-sm brand-cb" value="' + brand + '" checked onchange="updateFilters()" />' +
+            '<span class="text-sm">' + brand + '</span>';
+        container.appendChild(label);
+    }
+}
+
+buildBrandCheckboxes();
+
+function onPriceChange(val) {
+    var label = document.getElementById('price-label');
+    if (parseInt(val) >= 700) {
+        label.textContent = 'Any price';
+    } else {
+        label.textContent = '$' + val;
+    }
+    updateFilters();
+}
+
+function updateFilters() {
+    var maxPrice = parseInt(document.getElementById('price-range').value);
+    var showInstock = document.getElementById('filter-instock').checked;
+    var showTba = document.getElementById('filter-tba').checked;
+    var checkedBrands = [];
+    var brandCheckboxes = document.querySelectorAll('.brand-cb:checked');
+    for (var i = 0; i < brandCheckboxes.length; i++) {
+        checkedBrands.push(brandCheckboxes[i].value);
+    }
+
+    var visibleCount = 0;
+    var cards = document.querySelectorAll('#product-list > div');
+
+    for (var i = 0; i < cards.length; i++) {
+        var card = cards[i];
+        var id = parseInt(card.dataset.id);
+        var meta = productMeta[id];
+        var price = productPrices[id] || 0;
+
+        var priceOk = (maxPrice >= 700) || (price <= maxPrice);
+        var stockOk = (meta.stock === 'instock' && showInstock) || (meta.stock === 'tba' && showTba);
+        var brandOk = checkedBrands.indexOf(meta.brand) !== -1;
+
+        if (priceOk && stockOk && brandOk) {
+            card.style.display = '';
+            visibleCount++;
+        } else {
+            card.style.display = 'none';
+        }
+    }
+
+    var noResults = document.getElementById('no-results');
+    if (visibleCount === 0) {
+        noResults.style.display = 'block';
+    } else {
+        noResults.style.display = 'none';
+    }
+}
+
+function resetFilters() {
+    document.getElementById('price-range').value = 700;
+    document.getElementById('price-label').textContent = 'Any price';
+    document.getElementById('filter-instock').checked = true;
+    document.getElementById('filter-tba').checked = false;
+
+    var brandCheckboxes = document.querySelectorAll('.brand-cb');
+    for (var i = 0; i < brandCheckboxes.length; i++) {
+        brandCheckboxes[i].checked = true;
+    }
+
+    updateFilters();
+}
+
+var observer = new MutationObserver(function() {
+    updateFilters();
+});
+observer.observe(document.getElementById('product-list'), { childList: true });
